@@ -30,7 +30,6 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 `;
 
 function run(data: Pose[]) {
-  // Use the data from the JSON file here
   // @ts-expect-error - no types available
   const nn = ml5.neuralNetwork({ task: "classification", debug: true });
 
