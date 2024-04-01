@@ -1,5 +1,4 @@
 import "./index.css";
-import testPoses from "./testPoses";
 
 function getPoses(url: string): Promise<[]> {
   return fetch(url)
@@ -19,22 +18,38 @@ const fullscreenPoses = getPoses(fullscreenUrl);
 
 // Combineer de data van de verschillende poses zodat de nn onderscheid kan maken tussen de verschillende poses
 Promise.all([pausePoses, musePoses, fullscreenPoses]).then((data) => {
+  // Combineer de data van de verschillende poses
   const flattenedData = data.flat();
-  run(flattenedData);
+
+  // Shuffle/schud de data
+  flattenedData.sort(() => Math.random() - 0.5);
+
+  // Splits de data in train en test data
+  const trainingData = flattenedData.slice(
+    0,
+    Math.floor(flattenedData.length * 0.8)
+  );
+  const testingData = flattenedData.slice(
+    Math.floor(flattenedData.length * 0.8) + 1
+  );
+
+  // gebruik de train en test data om de nn te trainen
+  run({ trainingData, testingData });
 });
 
 type Pose = { vector: []; label: string };
+type inputData = { trainingData: Pose[]; testingData: Pose[] };
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <div></div>
 `;
 
-function run(data: Pose[]) {
+function run({ trainingData, testingData }: inputData) {
   // @ts-expect-error - no types available
   const nn = ml5.neuralNetwork({ task: "classification", debug: true });
 
   // valideer data
-  data.forEach((pose: Pose) => {
+  trainingData.forEach((pose: Pose) => {
     // check if there are more than 2 different labels
     if (
       pose.label !== "pause" &&
@@ -46,23 +61,42 @@ function run(data: Pose[]) {
   });
 
   // Voeg data toe aan de neural network
-  data.forEach((pose: Pose) => {
+  trainingData.forEach((pose: Pose) => {
     nn.addData(pose.vector, { label: pose.label });
   });
 
   nn.normalizeData();
 
-  nn.train({ epochs: 32 }, finishedTraining);
+  nn.train({ epochs: 32 }, classify);
 
-  function finishedTraining() {
-    nn.classify(testPoses.fullscreenPose.vector, handleResults);
-  }
+  async function classify() {
+    // houd bij hoeveel voorspellingen correct zijn
+    let correctPredictions = 0;
 
-  function handleResults(error: unknown, result: unknown) {
-    if (error) {
-      console.error(error);
-      return;
+    // Loop over de test data en voorspel de labels
+    for (const d of testingData) {
+      const result = await nn.classify(d.vector);
+      const { label: topSpellingLabel } = result[0];
+      const { label: correctAnswer } = d;
+      console.log(
+        `Ik voorspelde: ${topSpellingLabel}. Het correcte antwoord is: ${correctAnswer}`
+      );
+      if (topSpellingLabel === correctAnswer) {
+        correctPredictions++;
+      }
     }
-    console.log(result); // {label: 'red', confidence: 0.8};
+
+    // Bereken de accuracy door het aantal correcte voorspellingen te delen door het aantal test data
+    const accuracy = (correctPredictions / testingData.length) * 100;
+
+    console.log(`Accuracy: ${accuracy}%`);
   }
+
+  // function handleResults(error: unknown, result: unknown) {
+  //   if (error) {
+  //     console.error(error);
+  //     return;
+  //   }
+  //   console.log(result); // {label: 'red', confidence: 0.8};
+  // }
 }
