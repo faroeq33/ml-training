@@ -40,10 +40,6 @@ Promise.all([pausePoses, musePoses, fullscreenPoses]).then((data) => {
 type Pose = { vector: []; label: string };
 type inputData = { trainingData: Pose[]; testingData: Pose[] };
 
-document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
-  <div></div>
-`;
-
 function run({ trainingData, testingData }: inputData) {
   // @ts-expect-error - no types available
   const nn = ml5.neuralNetwork({ task: "classification", debug: true });
@@ -67,7 +63,11 @@ function run({ trainingData, testingData }: inputData) {
 
   nn.normalizeData();
 
-  nn.train({ epochs: 32 }, classify);
+  nn.train({ epochs: 32 }, () => saveModel()); // 1param: options?, 2param: callback?, 3param: callback
+
+  function saveModel() {
+    nn.save();
+  }
 
   async function classify() {
     // houd bij hoeveel voorspellingen correct zijn
@@ -91,12 +91,8 @@ function run({ trainingData, testingData }: inputData) {
 
     console.log(`Accuracy: ${accuracy}%`);
   }
-
-  // function handleResults(error: unknown, result: unknown) {
-  //   if (error) {
-  //     console.error(error);
-  //     return;
-  //   }
-  //   console.log(result); // {label: 'red', confidence: 0.8};
-  // }
 }
+
+document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
+  <div></div>
+`;
