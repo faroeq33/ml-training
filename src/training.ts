@@ -1,17 +1,16 @@
 import "./index.css";
-import { getAllPoses } from "./loadData";
+import getAllPoses from "./loadData";
 
-// Combineer de data van de verschillende poses zodat de nn onderscheid kan maken tussen de verschillende poses
-getAllPoses()
-  .then((data) => data) // just for formatting
-  .then((data) => {
-    // gebruik de train en test data om de nn te trainen
-    run(data);
-  });
+const poseData = getAllPoses();
+
+poseData.then((data) => {
+  run(data);
+});
 
 type Pose = { vector: []; label: string };
 type inputData = { trainingData: Pose[]; testingData: Pose[] };
 
+// gebruik de train en test data om de nn te trainen
 function run({ trainingData }: inputData) {
   // @ts-expect-error - no types available
   const nn = ml5.neuralNetwork({ task: "classification", debug: true });
@@ -35,11 +34,20 @@ function run({ trainingData }: inputData) {
 
   nn.normalizeData();
 
-  nn.train({ epochs: 32 }, () => saveModel()); // 1param: options?, 2param: callback?, 3param: callback
+  const trainingOptions = { epochs: 50, learningRate: 0.2 };
 
-  function saveModel() {
-    nn.save();
+  nn.train(trainingOptions, onTrained); // 1param: options?, 2param: callback?, 3param: callback
+
+  function onTrained() {
+    console.info("Model is trained");
+
+    // saveModel(nn);
+    console.warn("saving model is disabled");
   }
+}
+
+function saveModel(nn) {
+  nn.save();
 }
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `

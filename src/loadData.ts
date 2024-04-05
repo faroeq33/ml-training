@@ -1,45 +1,38 @@
 function getPoses(url: string): Promise<[]> {
   return fetch(url)
-    .then((response) => response.json())
+    .then((response) => {
+      return response.json();
+    })
     .then((data) => {
       return data.data;
+    })
+    .catch((error) => {
+      console.error("Error:", error);
     });
 }
 
-const pauseUrl = "../data/pauseposes-29-3-2024@13h54m17s.json";
-const fullscreenUrl = "../data/fullscreen-poses-29-3-2024@14h8m34s.json";
-const muteUrl = "../data/muteposes-29-3-2024@13h51m24s.json";
+const pauseUrl = "../data/rawposes-5-4-2024@19h58m42s.json";
 
 export function getAllPoses() {
-  return Promise.all([
-    getPoses(pauseUrl),
-    getPoses(muteUrl),
-    getPoses(fullscreenUrl),
-  ])
-    .then((data) => {
-      // Combineer de data van de verschillende poses
-      const flattenedData = data.flat();
+  return getPoses(pauseUrl).then((data) => {
+    // Combineer de data van de verschillende poses & Shuffle de data
+    const sortedData = data.flat().sort(() => Math.random() - 0.5);
 
-      // Shuffle/schud de data
-      flattenedData.sort(() => Math.random() - 0.5);
+    // console.log("after fetching poses", sortedData);
 
-      // Splits de data in train en test data
-      const trainingData = flattenedData.slice(
-        0,
-        Math.floor(flattenedData.length * 0.8)
-      );
-      console.log("testing loading");
+    // Splits de data in train en test data
+    const trainingData = sortedData.slice(
+      0,
+      Math.floor(sortedData.length * 0.8)
+    );
+    saveToLocalstorage("trainingData", trainingData);
 
-      saveToLocalstorage("trainingsposes", trainingData); //localstorage
-      const testingData = flattenedData.slice(
-        Math.floor(flattenedData.length * 0.8) + 1
-      );
-      saveToLocalstorage("trainingsposes", testingData);
-      return { trainingData, testingData };
-
-      // gebruik de train en test data om de nn te trainen
-    })
-    .then((data) => data);
+    const testingData = sortedData.slice(
+      Math.floor(sortedData.length * 0.8) + 1
+    );
+    saveToLocalstorage("testingData", testingData);
+    return { trainingData, testingData };
+  });
 }
 
 function saveToLocalstorage(keyName = "pose-", myPoses: unknown) {
@@ -61,13 +54,15 @@ function saveToLocalstorage(keyName = "pose-", myPoses: unknown) {
     "s";
 
   const finalPoses = JSON.stringify({ data: myPoses }, null, 2);
-  localStorage.setItem(`${keyName}-${datetime}`, "test");
 
-  // const blob = new Blob([finalPoses], { type: "application/json" });
-  // const url = URL.createObjectURL(blob);
-  // const link = document.createElement("a");
-  // link.href = url;
-  // link.download = `poses-${datetime}.json`;
-  // link.click();
-  // URL.revokeObjectURL(url);
+  // console.log("finalPoses", finalPoses);
+
+  const keyWithDate = `${keyName}-${datetime}`;
+
+  localStorage.setItem(`${keyName}`, finalPoses);
+  console.log("saved to localstorage", keyWithDate);
+
+  return finalPoses;
 }
+
+export default getAllPoses;
