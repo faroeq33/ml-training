@@ -1,6 +1,6 @@
 import "./index.css";
 import { Pose, ResponseBody } from "./types";
-import { saveToLocalstorage } from "./utils/saveToLocalstorage";
+import { saveToLocalstorage } from "./utils";
 
 async function getPoses(url: string): Promise<ResponseBody> {
   try {
