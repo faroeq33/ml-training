@@ -22,7 +22,7 @@ export const saveToLocalstorage = (keyName = "pose-", myPoses: unknown) => {
   const keyWithDate = `${keyName}-${datetime}`;
 
   localStorage.setItem(`${keyName}`, finalPoses);
-  console.log("saved to localstorage", keyWithDate);
+  console.log("saved to localstorage: ", keyWithDate);
 
   return finalPoses;
 };
