@@ -1,15 +1,6 @@
 import "./index.css";
+import { Pose, ResponseBody } from "./types";
 import { saveToLocalstorage } from "./utils/saveToLocalstorage";
-
-type ResponseBody = {
-  data: Pose[];
-  metaData: {
-    datetime: string;
-    totalPoses: number;
-  };
-};
-
-type Pose = { vector: []; label: string };
 
 async function getPoses(url: string): Promise<ResponseBody> {
   try {
@@ -29,15 +20,13 @@ async function main() {
   // Combineer de data van de verschillende poses & Shuffle de data
   const sortedData = data.flat().sort(() => Math.random() - 0.5);
 
-  // console.log("after fetching poses", sortedData);
-
   // Splits de data in train en testdata
   const trainingData = sortedData.slice(0, Math.floor(sortedData.length * 0.8));
 
   const testingData = sortedData.slice(Math.floor(sortedData.length * 0.8) + 1);
+  // Slaat testdata voor het testen van een neuralnetwork-model
   saveToLocalstorage("testingData", testingData);
 
-  //something
   // @ts-expect-error - geen types beschikbaar for ml5
   const mlfive = window.ml5;
   console.log(mlfive.version);
