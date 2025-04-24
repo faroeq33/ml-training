@@ -1,10 +1,16 @@
 # ML training
-This is the project where models get trained on pose data.
 
-## Run dev server
+This is the project where models get trained on pose data.
+Additionally, this project saves testingdata in localstorage in order to use it for neuralnetwork-model testing. That happens in the following repo https://github.com/faroeq33/ml-testing
+
+## Install dependancies
+
 ```sh
-npm run dev
+pnpm install
 ```
 
-## How save data to localstorage
-In loadData.ts the trainingdata is split into training & testdata. The splitting happens after running getAllPoses(). After that the trainingdata would be available in localstorage in order to use your data to for testing.
+## Run dev server
+
+```sh
+pnpm dev
+```

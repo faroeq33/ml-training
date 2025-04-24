@@ -22,7 +22,7 @@ async function getPoses(url: string): Promise<ResponseBody> {
   }
 }
 
-async function run() {
+async function main() {
   const url = "../data/poses-14-2-2025@13h2m13s.json";
   const { data } = await getPoses(url);
 
@@ -33,16 +33,18 @@ async function run() {
 
   // Splits de data in train en testdata
   const trainingData = sortedData.slice(0, Math.floor(sortedData.length * 0.8));
-  saveToLocalstorage("trainingData", trainingData);
 
   const testingData = sortedData.slice(Math.floor(sortedData.length * 0.8) + 1);
   saveToLocalstorage("testingData", testingData);
 
+  //something
   // @ts-expect-error - geen types beschikbaar for ml5
-  ml5.setBackend("webgl");
+  const mlfive = window.ml5;
+  console.log(mlfive.version);
 
-  // @ts-expect-error - no types available
-  const nn = ml5.neuralNetwork({ task: "classification", debug: true });
+  mlfive.setBackend("webgl");
+
+  const nn = mlfive.neuralNetwork({ task: "classification", debug: true });
 
   // valideer data
   trainingData.forEach((pose: Pose) => {
@@ -70,15 +72,10 @@ async function run() {
     console.info("Model is trained");
 
     nn.save();
-    // saveModel(nn);
-    console.warn("saving model is disabled");
   });
 }
 
-run();
-// type inputData = { trainingData: Pose[]; testingData: Pose[] };
-
-// gebruik de train en test data om de nn te trainen
+main();
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <div></div>
