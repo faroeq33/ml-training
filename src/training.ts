@@ -56,7 +56,11 @@ async function main() {
 
   const trainingOptions = { epochs: 450, learningRate: 0.2 };
 
-  // 1param: options?, 2param: callback?, 3param: callback
+  /*
+  // Zie documentatie voor meer uitleg van mogelijke parameters. https://docs.ml5js.org/#/reference/neural-network?id=nntrain
+
+  nn.train(?optionsOrCallback, ?optionsOrWhileTraining, ?callback)
+  */
   nn.train(trainingOptions, () => {
     console.info("Model is trained");
 
