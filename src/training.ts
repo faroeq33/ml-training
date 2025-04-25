@@ -1,14 +1,16 @@
 import { Pose } from "./types";
 import { saveToLocalstorage } from "./utils";
-import { data } from "../data/poses-14-2-2025@13h2m13s.json";
+import { data } from "../data/poses-25-4-2025@14h22m41s.json";
 
-// Combineer de data van de verschillende poses & Shuffle de data
-const sortedData = data.flat().sort(() => Math.random() - 0.5);
+// Shuffle de data
+const sortedData = data.sort(() => Math.random() - 0.5);
 
 // Splits data in train en testdata
 const trainingData = sortedData.slice(0, Math.floor(sortedData.length * 0.8));
+// console.log("trainingdata: ", trainingData);
 
 const testingData = sortedData.slice(Math.floor(sortedData.length * 0.8) + 1);
+// console.log("testData: ", testingData);
 // Slaat testdata op voor het testen van een neuralnetwork-model
 saveToLocalstorage("testingData", testingData);
 
@@ -18,7 +20,7 @@ console.log(mlfive.version);
 
 mlfive.setBackend("webgl");
 
-const nn = mlfive.neuralNetwork({ task: "classification", debug: true });
+const nn = mlfive.neuralNetwork({ task: "classification", debug: false });
 
 // valideer data
 trainingData.forEach((pose: Pose) => {
